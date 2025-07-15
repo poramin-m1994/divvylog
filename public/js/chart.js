@@ -11,7 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
 function drawMonthlyChart(data) {
   const ctx = document.getElementById("monthlyChart").getContext("2d");
 
-  // เตรียมข้อมูลแบบ grouped by ปี
   const years = [...new Set(data.map(d => new Date(d.date).getFullYear()))].sort();
   const months = [
     "January", "February", "March", "April", "May", "June",
@@ -19,7 +18,7 @@ function drawMonthlyChart(data) {
   ];
 
   const datasets = years.map((year, i) => {
-    const color = ["#facc15", "#f87171", "#60a5fa", "#34d399", "#c084fc"][i % 5]; // random สีสวยๆ
+    const color = ["#facc15", "#f87171", "#60a5fa", "#34d399", "#c084fc"][i % 5];
 
     const monthlyTotals = Array(12).fill(0);
     data
@@ -32,7 +31,8 @@ function drawMonthlyChart(data) {
     return {
       label: year.toString(),
       data: monthlyTotals,
-      backgroundColor: color
+      backgroundColor: color,
+      stack: "dividends" // กำหนดให้ stack เดียวกัน
     };
   });
 
@@ -49,7 +49,11 @@ function drawMonthlyChart(data) {
         title: { display: false }
       },
       scales: {
+        x: {
+          stacked: true
+        },
         y: {
+          stacked: true,
           beginAtZero: true,
           title: { display: true, text: "USD" }
         }
@@ -57,6 +61,7 @@ function drawMonthlyChart(data) {
     }
   });
 }
+
 
 function drawYearlyChart(data) {
   const ctx = document.getElementById("yearlyChart").getContext("2d");
