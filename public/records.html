@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>รายการเงินปันผล | DivvyLog</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' }
+  </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white min-h-screen transition-colors">
+
+  <nav class="bg-white dark:bg-gray-800 px-4 py-3 flex justify-between items-center shadow">
+    <div class="text-xl font-bold">📋 รายการปันผลทั้งหมด</div>
+    <div class="space-x-3">
+      <button onclick="toggleDarkMode()" class="px-4 py-1 bg-gray-200 dark:bg-gray-700 rounded">🌗</button>
+      <button onclick="logout()" class="px-4 py-1 bg-red-500 text-white rounded">ออกจากระบบ</button>
+    </div>
+  </nav>
+
+  <div class="p-4 overflow-x-auto">
+    <table class="min-w-full table-auto bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow">
+      <thead>
+        <tr class="bg-gray-100 dark:bg-gray-700 text-left">
+          <th class="p-3">วันที่</th>
+          <th class="p-3">หุ้น</th>
+          <th class="p-3">USD</th>
+          <th class="p-3">อัตราแลกเปลี่ยน</th>
+          <th class="p-3">จัดการ</th>
+        </tr>
+      </thead>
+      <tbody id="recordTableBody">
+        <!-- 👇 ข้อมูลจะถูกเติมโดย JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 🔄 Scripts -->
+  <script src="js/darkmode.js"></script>
+  <script src="js/record.js"></script>
+</body>
+</html>
