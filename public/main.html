@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Dashboard | DivvyLog</title>
+  <title>DivvyLog | Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
@@ -39,10 +39,13 @@
     </div>
   </div>
 
-  <!-- 📈 Charts -->
+  <!-- 📈 Charts & Monthly Summary Button -->
   <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
     <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow">
-      <h3 class="text-lg font-semibold mb-2">Dividends / Month</h3>
+      <div class="flex justify-between items-center mb-2">
+        <h3 class="text-lg font-semibold">Dividends / Month</h3>
+        <button id="openSummaryModal" onclick="openSummaryModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-3 py-1 rounded">ดูสรุปรายเดือน</button>
+      </div>
       <canvas id="monthlyChart"></canvas>
     </div>
     <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow">
@@ -56,12 +59,52 @@
     <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow space-y-4">
       <h3 class="text-lg font-semibold">เพิ่มรายการปันผลใหม่</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input id="ticker" type="text" placeholder="เช่น AAPL, GOOGL" class="p-3 rounded border bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600" />
-        <input id="amountUSD" type="number" placeholder="เช่น 12.50" class="p-3 rounded border bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600" />
-        <input id="exchangeRate" type="number" placeholder="เช่น 35.50" class="p-3 rounded border bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600" />
-        <input id="date" type="date" class="p-3 rounded border bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600" />
+        <div>
+          <label for="ticker" class="block text-sm mb-1">ชื่อหุ้น (Ticker)</label>
+          <input id="ticker" type="text" placeholder="เช่น AAPL, GOOGL" class="p-3 rounded border bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 w-full" />
+        </div>
+        <div>
+          <label for="amountUSD" class="block text-sm mb-1">จำนวนเงินปันผล (USD)</label>
+          <input id="amountUSD" type="number" placeholder="เช่น 12.50" class="p-3 rounded border bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 w-full" />
+        </div>
+        <div>
+          <label for="exchangeRate" class="block text-sm mb-1">อัตราแลกเปลี่ยน (USD → THB)</label>
+          <input id="exchangeRate" type="number" placeholder="เช่น 35.50" class="p-3 rounded border bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 w-full" />
+        </div>
+        <div>
+          <label for="date" class="block text-sm mb-1">วันที่ได้รับปันผล</label>
+          <input id="date" type="date" class="p-3 rounded border bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 w-full" />
+        </div>
       </div>
       <button onclick="submitDividend()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded">บันทึก</button>
+    </div>
+  </div>
+
+  <!-- 📅 Monthly Summary Modal -->
+  <div id="summaryModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black bg-opacity-50">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-[90%] max-w-xl shadow-xl">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold">สรุปรายเดือน</h2>
+        <button id="closeSummaryModal" class="text-red-500 text-2xl">&times;</button>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-4 mb-4">
+        <select id="summaryMonth" class="bg-white dark:bg-gray-700 text-black dark:text-white px-4 py-2 rounded-md">
+          <option value="0">January</option>
+          <option value="1">February</option>
+          <option value="2">March</option>
+          <option value="3">April</option>
+          <option value="4">May</option>
+          <option value="5">June</option>
+          <option value="6">July</option>
+          <option value="7">August</option>
+          <option value="8">September</option>
+          <option value="9">October</option>
+          <option value="10">November</option>
+          <option value="11">December</option>
+        </select>
+        <select id="summaryYear" class="bg-white dark:bg-gray-700 text-black dark:text-white px-4 py-2 rounded-md"></select>
+      </div>
+      <div id="summaryList" class="text-sm space-y-2 max-h-72 overflow-y-auto"></div>
     </div>
   </div>
 
@@ -69,5 +112,50 @@
   <script src="js/darkmode.js"></script>
   <script src="js/dashboard.js"></script>
   <script src="js/chart.js"></script>
+  <script>
+    const modal = document.getElementById("summaryModal");
+    const closeBtn = document.getElementById("closeSummaryModal");
+    const monthSelect = document.getElementById("summaryMonth");
+    const yearSelect = document.getElementById("summaryYear");
+    const listContainer = document.getElementById("summaryList");
+
+    function openSummaryModal() {
+      modal.classList.remove("hidden");
+      populateYears();
+      showMonthlySummary();
+    }
+
+    closeBtn.onclick = () => modal.classList.add("hidden");
+    monthSelect.onchange = showMonthlySummary;
+    yearSelect.onchange = showMonthlySummary;
+
+    function populateYears() {
+      const years = [...new Set(window.dividendData.map(d => new Date(d.date).getFullYear()))].sort();
+      yearSelect.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join("");
+    }
+
+    function showMonthlySummary() {
+      const selectedMonth = parseInt(monthSelect.value);
+      const selectedYear = parseInt(yearSelect.value);
+      const results = window.dividendData.filter(d => {
+        const dt = new Date(d.date);
+        return dt.getMonth() === selectedMonth && dt.getFullYear() === selectedYear;
+      });
+
+      if (results.length === 0) {
+        listContainer.innerHTML = `<p class='text-gray-400 text-center'>ไม่มีรายการปันผลในเดือนนี้</p>`;
+        return;
+      }
+
+      listContainer.innerHTML = results.map(d => {
+        const date = new Date(d.date);
+        const formatted = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth()+1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+        return `<div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-md flex justify-between">
+                  <span>${d.ticker} (${formatted})</span>
+                  <span class="font-semibold text-green-500">$${parseFloat(d.amount).toFixed(2)}</span>
+                </div>`;
+      }).join("");
+    }
+  </script>
 </body>
 </html>
