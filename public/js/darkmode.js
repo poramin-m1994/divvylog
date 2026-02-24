@@ -1,23 +1,14 @@
-const THEME_KEY = "theme";
-
 document.addEventListener("DOMContentLoaded", () => {
-  const theme = localStorage.getItem(THEME_KEY);
-
-  if (theme === "dark") {
-    document.documentElement.classList.add("dark");
-  } else {
-    document.documentElement.classList.remove("dark");
-  }
+  const theme = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.THEME);
+  document.documentElement.classList.toggle("dark", theme === "dark");
 });
 
 function toggleDarkMode() {
   const html = document.documentElement;
+  const isDark = html.classList.toggle("dark");
 
-  if (html.classList.contains("dark")) {
-    html.classList.remove("dark");
-    localStorage.setItem(THEME_KEY, "light");
-  } else {
-    html.classList.add("dark");
-    localStorage.setItem(THEME_KEY, "dark");
-  }
+  localStorage.setItem(
+    APP_CONFIG.STORAGE_KEYS.THEME,
+    isDark ? "dark" : "light"
+  );
 }

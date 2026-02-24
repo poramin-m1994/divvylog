@@ -1,75 +1,90 @@
-const SHEET_API = "https://script.google.com/macros/s/AKfycbzD1WHFhWzfmEmlXia5gMvPat8l2jMlDp6Q7MiDY6INi8hbc6cFyBAnleakr7TYyEG3/exec";
+document.addEventListener("DOMContentLoaded", async () => {
+  const user = getCurrentUser();
+  if (!user) {
+    redirectToLogin();
+    return;
+  }
 
-// โหลดข้อมูลเมื่อเปิดหน้า
-document.addEventListener("DOMContentLoaded", () => {
-  const user = localStorage.getItem("username");
-  if (!user) return window.location.href = "index.html";
-  loadDashboard(user);
+  await loadDashboard(user);
 });
 
-// ดึงข้อมูลทั้งหมด
 async function loadDashboard(user) {
   try {
-    const res = await fetch(`${SHEET_API}?action=getDividends&user=${user}`);
-    const data = await res.json();
-    if (!data.success) throw new Error("โหลดข้อมูลล้มเหลว");
+    const data = await DivvyApi.getDividends(user);
+    if (!data.success) {
+      throw new Error("Failed to load dividends");
+    }
 
-    const allRecords = data.records; // <-- ใช้ทั้งหมด ไม่กรองเฉพาะปี
-    const thisYear = new Date().getFullYear();
-    const thisYearRecords = allRecords.filter(d => new Date(d.date).getFullYear() === thisYear);
+    const allRecords = data.records || [];
+    const thisYearRecords = getRecordsForYear(allRecords, new Date().getFullYear());
+    renderDashboardSummary(thisYearRecords);
 
-    // แสดงเฉพาะปีนี้ในสรุป
-    const total = thisYearRecords.reduce((sum, r) => sum + parseFloat(r.amount), 0);
-    const latest = thisYearRecords[thisYearRecords.length - 1]?.ticker || "-";
-
-    document.getElementById("total-dividend").textContent = `$${total.toFixed(2)}`;
-    document.getElementById("total-entries").textContent = thisYearRecords.length;
-    document.getElementById("latest-ticker").textContent = latest;
-
-    // 👇 ส่งข้อมูลทั้งหมดเข้า chart.js
     window.dividendData = allRecords;
-
-  } catch (err) {
-    console.error("เกิดข้อผิดพลาดในการโหลดข้อมูล:", err);
+  } catch (error) {
+    console.error("Dashboard Load Error:", error);
   }
 }
 
-// ฟังก์ชันบันทึกข้อมูลใหม่
-async function submitDividend() {
-  const user = localStorage.getItem("username");
-  const ticker = document.getElementById("ticker").value.trim();
-  const amount = parseFloat(document.getElementById("amountUSD").value);
-  const rate = parseFloat(document.getElementById("exchangeRate").value);
-  const date = document.getElementById("date").value;
+function getRecordsForYear(records, year) {
+  return records.filter((record) => new Date(record.date).getFullYear() === year);
+}
 
-  // ✅ ตรวจสอบความถูกต้องของข้อมูล
-  if (!ticker || isNaN(amount) || isNaN(rate) || !date) {
+function renderDashboardSummary(records) {
+  const total = records.reduce(
+    (sum, record) => sum + toNumber(record.amount),
+    0
+  );
+  const latestTicker = records[records.length - 1]?.ticker || "-";
+
+  document.getElementById("total-dividend").textContent = `$${total.toFixed(2)}`;
+  document.getElementById("total-entries").textContent = records.length;
+  document.getElementById("latest-ticker").textContent = latestTicker;
+}
+
+function parseDividendForm() {
+  return {
+    user: getCurrentUser(),
+    ticker: document.getElementById("ticker").value.trim(),
+    amount: parseFloat(document.getElementById("amountUSD").value),
+    rate: parseFloat(document.getElementById("exchangeRate").value),
+    date: document.getElementById("date").value,
+  };
+}
+
+function isValidDividendPayload(payload) {
+  return (
+    payload.user &&
+    payload.ticker &&
+    !Number.isNaN(payload.amount) &&
+    !Number.isNaN(payload.rate) &&
+    payload.date
+  );
+}
+
+function toNumber(value) {
+  const parsed = parseFloat(value);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+async function submitDividend() {
+  const payload = parseDividendForm();
+
+  if (!isValidDividendPayload(payload)) {
     alert("กรุณากรอกข้อมูลให้ครบถ้วน");
     return;
   }
 
-  // 🔗 เตรียม URL แบบ GET สำหรับ Google Apps Script
-  const url = `${SHEET_API}?action=addDividend`
-            + `&user=${encodeURIComponent(user)}`
-            + `&date=${encodeURIComponent(date)}`
-            + `&ticker=${encodeURIComponent(ticker)}`
-            + `&amount=${amount}`
-            + `&rate=${rate}`;
-
   try {
-    const res = await fetch(url);
-    const result = await res.json();
-
+    const result = await DivvyApi.addDividend(payload);
     if (result.success) {
       alert("✅ บันทึกสำเร็จ!");
       window.location.reload();
-    } else {
-      alert("❌ เกิดข้อผิดพลาดในการบันทึก");
+      return;
     }
-  } catch (err) {
-    console.error("error:", err);
+
+    alert("❌ เกิดข้อผิดพลาดในการบันทึก");
+  } catch (error) {
+    console.error("Submit Error:", error);
     alert("เกิดปัญหาในการเชื่อมต่อกับเซิร์ฟเวอร์");
   }
 }
-
-

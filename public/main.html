@@ -8,13 +8,11 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     tailwind.config = {
-        darkMode: 'class'
-    }
+      darkMode: "class"
+    };
   </script>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white min-h-screen transition-colors">
-
-  <!-- 🔼 Navigation Bar -->
   <nav class="bg-white dark:bg-gray-800 shadow px-4 py-3 flex justify-between items-center">
     <div class="text-xl font-bold">📘 DivvyLog</div>
     <div class="space-x-3">
@@ -23,7 +21,6 @@
     </div>
   </nav>
 
-  <!-- 📊 Dashboard Summary -->
   <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
     <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow">
       <p class="text-gray-500">ปันผลรวมทั้งหมด</p>
@@ -39,12 +36,13 @@
     </div>
   </div>
 
-  <!-- 📈 Charts & Monthly Summary Button -->
   <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
     <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow">
       <div class="flex justify-between items-center mb-2">
         <h3 class="text-lg font-semibold">Dividends / Month</h3>
-        <button id="openSummaryModal" onclick="openSummaryModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-3 py-1 rounded">ดูสรุปรายเดือน</button>
+        <button id="openSummaryModal" onclick="openSummaryModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-3 py-1 rounded">
+          ดูสรุปรายเดือน
+        </button>
       </div>
       <canvas id="monthlyChart"></canvas>
     </div>
@@ -54,7 +52,6 @@
     </div>
   </div>
 
-  <!-- 📝 Add New Entry -->
   <div class="p-4">
     <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow space-y-4">
       <h3 class="text-lg font-semibold">เพิ่มรายการปันผลใหม่</h3>
@@ -80,7 +77,6 @@
     </div>
   </div>
 
-  <!-- 📅 Monthly Summary Modal -->
   <div id="summaryModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black bg-opacity-50">
     <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-[90%] max-w-xl shadow-xl">
       <div class="flex justify-between items-center mb-4">
@@ -108,54 +104,11 @@
     </div>
   </div>
 
-  <!-- 🔄 Scripts -->
+  <script src="js/app-config.js"></script>
+  <script src="js/api.js"></script>
   <script src="js/darkmode.js"></script>
   <script src="js/dashboard.js"></script>
   <script src="js/chart.js"></script>
-  <script>
-    const modal = document.getElementById("summaryModal");
-    const closeBtn = document.getElementById("closeSummaryModal");
-    const monthSelect = document.getElementById("summaryMonth");
-    const yearSelect = document.getElementById("summaryYear");
-    const listContainer = document.getElementById("summaryList");
-
-    function openSummaryModal() {
-      modal.classList.remove("hidden");
-      populateYears();
-      showMonthlySummary();
-    }
-
-    closeBtn.onclick = () => modal.classList.add("hidden");
-    monthSelect.onchange = showMonthlySummary;
-    yearSelect.onchange = showMonthlySummary;
-
-    function populateYears() {
-      const years = [...new Set(window.dividendData.map(d => new Date(d.date).getFullYear()))].sort();
-      yearSelect.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join("");
-    }
-
-    function showMonthlySummary() {
-      const selectedMonth = parseInt(monthSelect.value);
-      const selectedYear = parseInt(yearSelect.value);
-      const results = window.dividendData.filter(d => {
-        const dt = new Date(d.date);
-        return dt.getMonth() === selectedMonth && dt.getFullYear() === selectedYear;
-      });
-
-      if (results.length === 0) {
-        listContainer.innerHTML = `<p class='text-gray-400 text-center'>ไม่มีรายการปันผลในเดือนนี้</p>`;
-        return;
-      }
-
-      listContainer.innerHTML = results.map(d => {
-        const date = new Date(d.date);
-        const formatted = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth()+1).toString().padStart(2, '0')}/${date.getFullYear()}`;
-        return `<div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-md flex justify-between">
-                  <span>${d.ticker} (${formatted})</span>
-                  <span class="font-semibold text-green-500">$${parseFloat(d.amount).toFixed(2)}</span>
-                </div>`;
-      }).join("");
-    }
-  </script>
+  <script src="js/main-summary.js"></script>
 </body>
 </html>

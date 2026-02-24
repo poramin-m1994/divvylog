@@ -2,22 +2,22 @@ async function login() {
   const username = document.getElementById("username").value.trim();
   const errorText = document.getElementById("error");
 
-  if (!username) return;
+  if (!username) {
+    return;
+  }
 
   try {
-    const res = await fetch(
-      "https://script.google.com/macros/s/AKfycbzD1WHFhWzfmEmlXia5gMvPat8l2jMlDp6Q7MiDY6INi8hbc6cFyBAnleakr7TYyEG3/exec?username=" + username
-    );
-    const data = await res.json();
+    const data = await DivvyApi.checkUserExists(username);
 
     if (data && data.exists) {
-      localStorage.setItem("username", username);
+      localStorage.setItem(APP_CONFIG.STORAGE_KEYS.USERNAME, username);
       window.location.href = "main.html";
-    } else {
-      errorText.classList.remove("hidden");
+      return;
     }
-  } catch (e) {
-    console.error("Error:", e);
+
+    errorText.classList.remove("hidden");
+  } catch (error) {
+    console.error("Login Error:", error);
     errorText.textContent = "เกิดข้อผิดพลาด กรุณาลองใหม่";
     errorText.classList.remove("hidden");
   }
