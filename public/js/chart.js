@@ -65,6 +65,7 @@ function drawYearlyChart(data) {
   const yearlyTotals = sumByYear(data);
   const sortedYears = Object.keys(yearlyTotals).sort();
   const values = sortedYears.map((year) => yearlyTotals[year]);
+  renderYearlyGrowthSummary(sortedYears, values);
 
   new Chart(ctx, {
     type: "bar",
@@ -83,6 +84,20 @@ function drawYearlyChart(data) {
       plugins: {
         legend: { display: false },
         title: { display: false },
+        tooltip: {
+          callbacks: {
+            label(context) {
+              return `Year Dividend income: ${context.parsed.y.toFixed(2)}`;
+            },
+            afterLabel(context) {
+              return getYearGrowthTooltipLine(
+                sortedYears,
+                values,
+                context.dataIndex
+              );
+            },
+          },
+        },
       },
       scales: {
         y: {
@@ -92,6 +107,61 @@ function drawYearlyChart(data) {
       },
     },
   });
+}
+
+function getYearGrowthTooltipLine(years, values, index) {
+  if (index === 0) {
+    return "Growth: N/A";
+  }
+
+  const currentYear = years[index];
+  const previousYear = years[index - 1];
+  const currentValue = values[index];
+  const previousValue = values[index - 1];
+
+  if (previousValue === 0) {
+    return `Growth: N/A (base = 0)`;
+  }
+
+  const growthPercent = ((currentValue - previousValue) / previousValue) * 100;
+  const sign = growthPercent >= 0 ? "+" : "";
+  const trend = growthPercent >= 0 ? "up" : "down";
+  return `${currentYear} is ${trend} ${sign}${growthPercent.toFixed(2)}%`;
+}
+
+function renderYearlyGrowthSummary(sortedYears, values) {
+  const growthTextEl = document.getElementById("yearly-growth-text");
+  if (!growthTextEl) {
+    return;
+  }
+
+  if (sortedYears.length < 2) {
+    growthTextEl.textContent = "ยังมีข้อมูลไม่พอสำหรับเทียบการเติบโตกับปีก่อนหน้า";
+    growthTextEl.className = "text-sm mb-2 text-gray-500 dark:text-gray-300";
+    return;
+  }
+
+  const latestYear = sortedYears[sortedYears.length - 1];
+  const previousYear = sortedYears[sortedYears.length - 2];
+  const latestValue = values[values.length - 1];
+  const previousValue = values[values.length - 2];
+
+  if (previousValue === 0) {
+    growthTextEl.textContent = `เทียบปี ${previousYear} ไม่สามารถคำนวณเปอร์เซ็นต์ได้ (ฐาน = 0)`;
+    growthTextEl.className = "text-sm mb-2 text-gray-500 dark:text-gray-300";
+    return;
+  }
+
+  const growthPercent = ((latestValue - previousValue) / previousValue) * 100;
+  const trendText = growthPercent >= 0 ? "เพิ่มขึ้น" : "ลดลง";
+  const sign = growthPercent >= 0 ? "+" : "";
+
+  growthTextEl.textContent =
+    `ปี ${latestYear} ${trendText}จากปี ${previousYear} ${sign}${growthPercent.toFixed(2)}%`;
+  growthTextEl.className =
+    growthPercent >= 0
+      ? "text-sm mb-2 text-green-600 dark:text-green-400"
+      : "text-sm mb-2 text-red-600 dark:text-red-400";
 }
 
 function getSortedYears(data) {
