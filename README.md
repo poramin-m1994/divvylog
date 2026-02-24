@@ -1,4 +1,3 @@
-
 # 📘 DivvyLog
 
 DivvyLog คือเว็บแอปสำหรับจดบันทึกและวิเคราะห์รายได้จากเงินปันผล (Dividend Tracker) ที่ใช้งานง่าย รองรับการใช้งานทั้งบน PC และมือถือ โดยใช้ **Google Sheets** เป็นฐานข้อมูลหลัก
@@ -51,14 +50,12 @@ DivvyLog/
 
    - `Users` (A: Username)
    - `Dividends` (A: Date, B: Ticker, C: Amount, D: Rate, E: Username)
-
 2. เปิด Google Apps Script แล้วใส่โค้ด `doGet()` และ `doPost()` จาก `Code.gs`
+3. Deploy: firebase deploy
 
-3. Deploy:
    - เลือก `Deploy > Web App`
    - เลือกให้ Anyone สามารถเข้าใช้ได้
    - ก๊อป URL ที่ได้มาใส่ในตัวแปร `SHEET_API` ใน JS
-
 4. เปิดไฟล์ `index.html` ด้วย Live Server หรือ Web Server ใด ๆ
 
 ---
@@ -72,14 +69,14 @@ DivvyLog/
 
 ## 🧑‍💻 ผู้พัฒนา
 
-> พัฒนาโดย: ธันว์  
-> ตำแหน่ง: Java/Golang Backend Developer  
-> งานอดิเรก: ลงทุนหุ้น, ทำ Dashboard, เล่นบอร์ดเกมแนวสืบสวน 🕵️‍♂️  
+> พัฒนาโดย: ธันว์
+> ตำแหน่ง: Java/Golang Backend Developer
+> งานอดิเรก: ลงทุนหุ้น, ทำ Dashboard, เล่นบอร์ดเกมแนวสืบสวน 🕵️‍♂️
 > AI Assistant: ChatGPT (ในโหมด Jarvis 🤖)
 
 ---
 
 ## 📬 ติดต่อเพิ่มเติม
 
-หากต้องการให้ระบบนี้รองรับการคำนวณภาษี, รายงาน PDF, หรือเชื่อมต่อ API โบรกเกอร์  
+หากต้องการให้ระบบนี้รองรับการคำนวณภาษี, รายงาน PDF, หรือเชื่อมต่อ API โบรกเกอร์
 สามารถติดต่อผู้พัฒนาเพื่อขอ roadmap ได้เลย
